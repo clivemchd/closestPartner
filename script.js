@@ -1,4 +1,5 @@
 const partners = [{
+	'uid' : '123',
   'content_wrapper' : {
     'disaster_recovery' : {
 			"data_centers_list": {
@@ -32,6 +33,7 @@ const partners = [{
     }
   }
 }, {
+	'uid' : '456',
 	'content_wrapper' : {
     'disaster_recovery' : {
 			"data_centers_list": {
@@ -65,6 +67,7 @@ const partners = [{
     }
   }
 }, {
+	'uid' : '789',
 	'content_wrapper' : {
     'disaster_recovery' : {
 			"data_centers_list": {
@@ -104,9 +107,10 @@ const visitorLocation = {
 	longitude: -77.084615
 }
 
-let closestPartners = [];
+let closestPartners = [ ...partners ];
 let maxDistanceRange = 999999;
 let dataCenterLocationText = '';
+let modifiedPartner = {};
 
 /**
    * Checks if object is defined at every level in the path provided
@@ -146,23 +150,27 @@ const setClosestLocation = (singlePartner) => {
 		if(distance < maxDistanceRange){
 			maxDistanceRange = distance;
 			dataCenterLocationText = `${partnerLocation.city}, ${partnerLocation.state}, ${partnerLocation.country}`;
-			const tempPartner = { ...singlePartner, closestDataCenterName: dataCenterLocationText, distanceFromVisitor: distance };
-			closestPartners.push(tempPartner);
 		}
 	})
+	modifiedPartner = { ...singlePartner, closestDataCenterName: dataCenterLocationText, distanceFromVisitor: maxDistanceRange };
 }
 
 partners && partners.length > 0 && partners.forEach((singlePartner, index) => {
 	if(isDefined(singlePartner, 'content_wrapper.disaster_recovery.data_centers_list.locations')){
 		setClosestLocation(singlePartner);
-		closestPartners.sort((firstElem, secondElem) => {
-			if(firstElem.distanceFromVisitor > secondElem.distanceFromVisitor)
-				return 1;
-			if(firstElem.distanceFromVisitor < secondElem.distanceFromVisitor)
-				return -1;
-			return 0
-		})
+		closestPartners.splice(index, 1, modifiedPartner)
+		maxDistanceRange = 999999;
+		dataCenterLocationText = '';
+		modifiedPartner = {};
 	}
 });
+
+closestPartners.sort((firstElem, secondElem) => {
+	if(firstElem.distanceFromVisitor > secondElem.distanceFromVisitor)
+		return 1;
+	if(firstElem.distanceFromVisitor < secondElem.distanceFromVisitor)
+		return -1;
+	return 0
+})
 
 console.log(closestPartners);
